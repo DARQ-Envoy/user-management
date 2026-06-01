@@ -20,9 +20,6 @@ export class UserDataService implements ServerComm {
       return Promise.resolve(new UserResponse([...mockUsers]) as unknown as TRes);
     }
 
-  LoadUsers(): Promise<UserResponse> {
-    return Promise.resolve(new UserResponse([...mockUsers]));
-  }
 
   AddUser(user: Omit<User, 'id'>): Promise<UserResponse> {
     const newUser = new User(nextId++, user.name, user.email);

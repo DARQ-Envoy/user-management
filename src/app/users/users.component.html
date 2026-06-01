@@ -1,6 +1,5 @@
     <div class="users-container">
  
-      <!-- toolbar -->
       <div class="toolbar">
         <div class="search-wrap">
           <svg class="search-icon" viewBox="0 0 20 20" fill="none">
@@ -33,7 +32,6 @@
         </div>
       </div>
  
-      <!-- error banner -->
       @if (error()) {
         <div class="error-banner">
           <svg viewBox="0 0 20 20" fill="none">
@@ -44,7 +42,6 @@
         </div>
       }
  
-      <!-- add new user row -->
       @if (status() === 'add') {
         <div class="add-row" [formGroup]="addForm">
           <span class="new-badge">NEW</span>
@@ -81,7 +78,6 @@
         </div>
       }
  
-      <!-- table -->
       <table class="users-table">
         <thead>
           <tr>
@@ -137,7 +133,6 @@
                   </div>
                 </td>
               } @else {
-                <!-- view mode row -->
                 <td>{{ user.name }}</td>
                 <td>{{ user.email }}</td>
                 <td class="col-actions">

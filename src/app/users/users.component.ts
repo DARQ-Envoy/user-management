@@ -9,6 +9,7 @@ import {
 import { SERVER_COMM_TOKEN } from './tokens/server-comm.token';
 import { User } from './models/user.model';
 import { trimValidator, uniqueEmailValidator } from './validators/email.validator';
+import { UserResponse } from './models/response.model';
  
 type Status = 'idle' | 'add' | 'edit';
  
@@ -98,7 +99,7 @@ email: ['',
     this.isLoading.set(true);
     this.error.set(null);
     try {
-      const result = await this.serverComm.LoadUsers();
+      const result = await this.serverComm.LoadData<UserResponse>();
       this.users.set(result.users);
     } catch {
       this.error.set('Failed to load users. Please try refreshing.');
