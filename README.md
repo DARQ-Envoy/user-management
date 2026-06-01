@@ -39,7 +39,7 @@ src/app/
 The module communicates with the outside world through a single `InjectionToken`:
 
 ```typescript
-export const SERVER_COMM_TOKEN = new InjectionToken<ServerComm>('SERVER_COMM_TOKEN');
+export const SERVER_COMM_TOKEN = new InjectionToken<UserServerComm>('SERVER_COMM_TOKEN');
 ```
 
 The host application provides its own implementation by overriding this token:
@@ -53,18 +53,37 @@ The `UsersComponent` never references a concrete service — it only knows about
 
 ---
 
-## ServerComm Interface
+## ServerComm Interfaces
+
+The interface layer is split into two levels — a generic base that matches the original spec, and a user-specific extension that adds CRUD operations.
+
+### Base interface — `ServerComm`
+
+Defined exactly as specified:
 
 ```typescript
 export interface ServerComm {
   LoadData<TRes extends BaseResponse>(): Promise<TRes>;
+}
+```
+
+`LoadData` is intentionally generic — constrained to `BaseResponse` subtypes so the same pattern can serve any module in the host application. The name `BaseResponse` is used instead of `Response` to avoid collision with the browser's built-in Fetch API `Response` global.
+
+### User-specific interface — `UserServerComm`
+
+Extends `ServerComm` with the three user CRUD operations:
+
+```typescript
+export interface UserServerComm extends ServerComm {
   AddUser(user: Omit<User, 'id'>): Promise<UserResponse>;
   EditUser(user: User): Promise<UserResponse>;
   DeleteUser(id: number): Promise<UserResponse>;
 }
 ```
 
-`LoadData` follows the original generic spec — constrained to `BaseResponse` subtypes so the same interface pattern can serve other modules in the host application. `AddUser`, `EditUser`, and `DeleteUser` are user-module specific and each return a `Promise<UserResponse>` containing the full updated user list. The component resets its local state from this return value on every operation — no local array mutations.
+`ServerComm` is preserved exactly as specified. `UserServerComm` extends it rather than replacing it — the generic `LoadData` contract is fully honoured. The split reflects a deliberate design decision: the generic pattern belongs at the host application level, reusable across modules, while the user-specific operations belong inside this module only.
+
+Each CRUD method returns `Promise<UserResponse>` — the full updated user list. The component resets its local signal state from this return value on every operation. No local array mutations.
 
 `AddUser` accepts `Omit<User, 'id'>` because ID assignment is the server's responsibility. The caller never provides one.
 
@@ -90,7 +109,7 @@ export class UserResponse extends BaseResponse {
 }
 ```
 
-`BaseResponse` is intentionally empty — it exists as a type constraint anchor for the generic `LoadData` method, not as a data carrier.
+`BaseResponse` is intentionally empty — it exists as a type constraint anchor for the generic `LoadData` method, not as a data carrier. `UserResponse` is the derived class used as `TRes` when calling `LoadData<UserResponse>()`.
 
 ---
 
@@ -149,7 +168,7 @@ async loadData(): Promise<void> {
 }
 ```
 
-The same pattern applies to `AddUser`, `EditUser`, and `DeleteUser`. On failure, a descriptive error banner appears above the table. The error is cleared automatically when `handleStatus` is called — stale errors never persist across interactions.
+The same pattern applies to `AddUser`, `EditUser`, and `DeleteUser`. On failure, a descriptive error banner appears above the table. The error clears automatically when `handleStatus` is called — stale errors never persist across interactions.
 
 All buttons are disabled via `[disabled]="isLoading()"` while any operation is in flight, preventing double-submission and race conditions.
 
@@ -184,7 +203,7 @@ export const trimValidator: ValidatorFn = (control) => {
 
 ### `uniqueEmailValidator`
 
-A higher-order validator that accepts the current user list and an optional excluded ID via factory functions:
+A higher-order validator factory that accepts the current user list and an optional excluded ID:
 
 ```typescript
 export function uniqueEmailValidator(
@@ -193,7 +212,7 @@ export function uniqueEmailValidator(
 ): ValidatorFn
 ```
 
-Used in the add form:
+Used in the add form — any email match in the list is a duplicate:
 ```typescript
 email: ['', [Validators.required, trimValidator, Validators.email,
              uniqueEmailValidator(() => this.users())]]

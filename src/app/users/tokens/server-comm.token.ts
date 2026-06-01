@@ -1,6 +1,6 @@
 import { InjectionToken } from '@angular/core';
-import { ServerComm } from '../interfaces/server-comm.interface';
+import {  UserServerComm } from '../interfaces/server-comm.interface';
 
-export const SERVER_COMM_TOKEN = new InjectionToken<ServerComm>(
+export const SERVER_COMM_TOKEN = new InjectionToken<UserServerComm>(
   'SERVER_COMM_TOKEN'
 );

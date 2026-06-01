@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ServerComm } from '../interfaces/server-comm.interface';
+import {  UserServerComm } from '../interfaces/server-comm.interface';
 import { BaseResponse, UserResponse } from '../models/response.model';
 import { User } from '../models/user.model';
 
@@ -14,7 +14,7 @@ let mockUsers: User[] = [
 let nextId = mockUsers.length + 1;
 
 @Injectable({ providedIn: 'root' })
-export class UserDataService implements ServerComm {
+export class UserDataService implements UserServerComm {
 
    LoadData<TRes extends BaseResponse>(): Promise<TRes> {
       return Promise.resolve(new UserResponse([...mockUsers]) as unknown as TRes);
